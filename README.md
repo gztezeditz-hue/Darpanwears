@@ -1,0 +1,380 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>The Darpan Wears</title>
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--muted:#6b7280;--accent:#ff6b00;--text:#0f1724;--shadow:0 10px 30px rgba(15,23,36,0.06)}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,Roboto,-apple-system;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased}
+.wrap{max-width:520px;margin:0 auto;padding:14px}
+.header{display:flex;justify-content:space-between;align-items:center}
+.brand{display:flex;gap:10px;align-items:center}
+.logo{width:52px;height:52px;border-radius:12px;background:linear-gradient(135deg,var(--accent),#06b6d4);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900}
+.title{font-weight:900;font-size:18px}
+.sub{font-size:12px;color:var(--muted)}
+.search{margin-top:12px;background:var(--card);padding:10px;border-radius:12px;box-shadow:var(--shadow);display:flex;gap:8px;align-items:center}
+.chips{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.chip{padding:8px 12px;border-radius:999px;background:#fff;border:1px solid rgba(0,0,0,0.04);font-weight:700;font-size:13px;color:var(--muted)}
+.grid{display:grid;grid-template-columns:1fr;gap:14px;margin-top:12px}
+.card{background:var(--card);border-radius:12px;padding:12px;box-shadow:var(--shadow);display:flex;gap:12px;align-items:flex-start}
+.card img{width:120px;height:120px;object-fit:cover;border-radius:10px}
+.info{flex:1}
+.titleP{font-weight:800;font-size:16px}
+.desc{font-size:13px;color:var(--muted);margin-top:6px}
+.price{margin-top:8px;font-weight:800}
+.price .special{color:var(--accent);margin-right:8px}
+.row{display:flex;gap:8px;margin-top:8px;align-items:center}
+.btn{background:var(--accent);color:#fff;border:0;padding:10px 12px;border-radius:10px;font-weight:800}
+.btn.out{background:#fff;color:var(--text);border:1px solid rgba(0,0,0,0.06)}
+.footer{margin-top:18px;text-align:center;color:var(--muted);font-size:13px}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,0.45);display:none;align-items:center;justify-content:center;padding:12px}
+.panel{width:100%;max-width:520px;background:#fff;border-radius:12px;padding:12px;max-height:88vh;overflow:auto}
+.input,textarea,select{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(0,0,0,0.06);font-size:14px;margin-top:8px}
+.file{border:2px dashed rgba(0,0,0,0.06);padding:10px;border-radius:8px;text-align:center;margin-top:8px}
+.small{font-size:13px;color:var(--muted)}
+.hint{font-size:12px;color:var(--muted);margin-top:6px}
+.topright{display:flex;gap:8px;align-items:center}
+.exportBtn{background:#fff;border:1px solid rgba(0,0,0,0.06);padding:8px;border-radius:8px}
+kbd{background:#f3f4f6;padding:3px 6px;border-radius:6px;font-size:12px;border:1px solid rgba(0,0,0,0.04)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header">
+    <div class="brand">
+      <div class="logo">DW</div>
+      <div><div class="title">The Darpan Wears</div><div class="sub">T-Shirts • Jeans • Jackets • Shoes • Electronic Gadgets</div></div>
+    </div>
+    <div class="topright">
+      <button id="adminBtn" class="btn out">Admin</button>
+    </div>
+  </div>
+
+  <div class="search">
+    <div style="flex:1"><input id="q" class="input" placeholder="Search product or category"/></div>
+    <div><button id="searchBtn" class="btn out">Search</button></div>
+  </div>
+
+  <div class="chips" id="cats"></div>
+  <div class="grid" id="grid"></div>
+
+  <div style="margin-top:12px;display:flex;justify-content:space-between;align-items:center">
+    <div class="small">Products saved locally; export to publish for everyone</div>
+    <div class="small">Payments: COD / Online (button only)</div>
+  </div>
+
+  <div class="footer">© <span id="year"></span> The Darpan Wears</div>
+</div>
+
+<!-- Order Modal -->
+<div id="orderModal" class="modal"><div class="panel">
+  <div style="display:flex;justify-content:space-between;align-items:center">
+    <strong>Place Order</strong>
+    <button id="closeOrder" class="btn out">Close</button>
+  </div>
+  <div id="orderProd" style="margin-top:8px"></div>
+  <input id="o_name" class="input" placeholder="Name"/>
+  <input id="o_phone" class="input" placeholder="Phone number"/>
+  <input id="o_state" class="input" placeholder="State"/>
+  <input id="o_city" class="input" placeholder="City"/>
+  <input id="o_village" class="input" placeholder="Village"/>
+  <input id="o_pin" class="input" placeholder="Pincode"/>
+  <label class="small" style="margin-top:8px">Payment</label>
+  <select id="o_pay" class="input"><option value="COD">Cash on Delivery</option><option value="Online">Online Payment</option></select>
+  <div style="display:flex;gap:8px;margin-top:12px">
+    <button id="orderSubmit" class="btn">Save & Open WhatsApp</button>
+    <button id="whatsBtn" class="btn out">Only WhatsApp</button>
+  </div>
+</div></div>
+
+<!-- Admin Modal -->
+<div id="adminModal" class="modal"><div class="panel">
+  <div style="display:flex;justify-content:space-between;align-items:center">
+    <strong>Admin Panel</strong>
+    <div>
+      <button id="closeAdmin" class="btn out">Close</button>
+    </div>
+  </div>
+  <div id="adminArea" style="margin-top:8px"></div>
+</div></div>
+
+<script>
+/* ======= Config ======= */
+const ADMIN_PASSWORD = 'darpan2025';
+const WHATS_NUMBER = '919332307996'; // your WhatsApp
+const STORAGE_KEY = 'dw_products_v1';
+const ORDERS_KEY = 'dw_orders_v1';
+const REMOTE_URL_KEY = 'dw_remote_products_url_v1';
+/* ====================== */
+
+document.getElementById('year').textContent = new Date().getFullYear();
+const CATS = ['T-Shirts','Jeans','Jackets','Shoes','Electronic Gadgets'];
+const q = s => document.querySelector(s), id = s => document.getElementById(s);
+
+let products = []; // array of {id,name,desc,sell,special,size,material,category,imgBase64,sold}
+let remoteUrl = localStorage.getItem(REMOTE_URL_KEY) || '';
+
+function loadLocal(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw) products = JSON.parse(raw);
+    else products = [];
+  }catch(e){ products = []; }
+}
+
+function saveLocal(){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
+}
+
+function downloadFile(filename, text){
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([text], {type:'application/json'}));
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function uploadJsonFromFile(input){
+  return new Promise((resolve,reject)=>{
+    const f = input.files[0];
+    if(!f) return reject('No file');
+    const r = new FileReader();
+    r.onload = e=>{ try{ const j = JSON.parse(e.target.result); resolve(j);}catch(err){ reject(err);} };
+    r.readAsText(f);
+  });
+}
+
+/* Render UI */
+const catsWrap = id('cats');
+CATS.forEach(c=>{ const el = document.createElement('div'); el.className='chip'; el.innerText=c; el.onclick=()=>renderProducts(c); catsWrap.appendChild(el); });
+
+id('searchBtn').onclick = ()=>{ const v = id('q').value.trim().toLowerCase(); renderProducts(null, v); };
+
+
+function placeholder(){ return 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAAAQCAYAAAB49lVfAAAAF0lEQVR4nGNgGAXUBwYGBgYGBgYGAAAk4A+5k5tJYAAAAASUVORK5CYII='; }
+function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[c])); }
+
+function renderProducts(filter=null, search=null){
+  const grid = id('grid'); grid.innerHTML='';
+  let list = products.slice();
+  if(filter) list = list.filter(p=>p.category===filter);
+  if(search) list = list.filter(p=> (p.name+p.desc+p.category).toLowerCase().includes(search));
+  list.forEach(p=>{
+    const c = document.createElement('div'); c.className='card';
+    const img = document.createElement('img'); img.src = p.imgBase64 || placeholder(); img.alt = p.name;
+    const info = document.createElement('div'); info.className='info';
+    info.innerHTML = '<div class="titleP">'+escapeHtml(p.name)+'</div><div class="desc">'+escapeHtml(p.desc)+'</div><div class="price">'+(p.special?'<span class="special">₹'+p.special+'</span> <span class="small" style="text-decoration:line-through">₹'+p.sell+'</span>':'₹'+p.sell)+'</div><div class="small">Size: '+(p.size||'-')+' • Material: '+(p.material||'-')+'</div>';
+    const row = document.createElement('div'); row.className='row';
+    const orderBtn = document.createElement('button'); orderBtn.className='btn'; orderBtn.innerText='Order Now'; orderBtn.onclick=()=>openOrder(p.id);
+    const viewBtn = document.createElement('button'); viewBtn.className='btn out'; viewBtn.innerText='View'; viewBtn.onclick=()=>viewProduct(p.id);
+    row.appendChild(orderBtn); row.appendChild(viewBtn); info.appendChild(row);
+    c.appendChild(img); c.appendChild(info); grid.appendChild(c);
+  });
+}
+
+function viewProduct(idp){ const p = products.find(x=>x.id===idp); if(!p) return; alert(p.name+"\n\n"+p.desc+"\n\nPrice: ₹"+(p.special||p.sell)+"\nSize: "+(p.size||'-')+"\nMaterial: "+(p.material||'-')) }
+
+/* Orders */
+let currentProduct = null;
+function openOrder(pid){
+  const p = products.find(x=>x.id===pid); if(!p) return alert('Product not found');
+  currentProduct = p;
+  id('orderProd').innerHTML = '<div style="display:flex;gap:8px;align-items:center"><img src="'+(p.imgBase64||placeholder())+'" style="width:72px;height:72px;object-fit:cover;border-radius:8px"/><div><div style="font-weight:800">'+escapeHtml(p.name)+'</div><div class="small">₹'+(p.special||p.sell)+'</div></div></div>';
+  id('orderModal').style.display='flex';
+}
+id('closeOrder').onclick = ()=> id('orderModal').style.display='none';
+
+id('orderSubmit').onclick = async ()=>{
+  const name = id('o_name').value.trim(); const phone = id('o_phone').value.trim();
+  const state = id('o_state').value.trim(); const city = id('o_city').value.trim();
+  const village = id('o_village').value.trim(); const pin = id('o_pin').value.trim();
+  const payment = id('o_pay').value;
+  if(!name||!phone||!state||!city||!pin) return alert('Please fill required fields');
+  // save order in localStorage orders
+  const ordersRaw = localStorage.getItem(ORDERS_KEY); let orders = [];
+  if(ordersRaw) try{ orders = JSON.parse(ordersRaw);}catch(e){ orders=[];}
+  const order = { id: 'ord_'+Date.now().toString(36), product:{id:currentProduct.id,name:currentProduct.name,price:currentProduct.special||currentProduct.sell}, customer:{name,phone,state,city,village,pin}, payment, date: new Date().toISOString() };
+  orders.unshift(order);
+  localStorage.setItem(ORDERS_KEY, JSON.stringify(orders));
+  // open WhatsApp with prefilled message to admin
+  const txt = encodeURIComponent('New order from The Darpan Wears:\\nProduct: '+order.product.name+' (₹'+order.product.price+')\\nName: '+name+'\\nPhone: '+phone+'\\nAddress: '+village+', '+city+', '+state+' - '+pin+'\\nPayment: '+payment+'\\nOrder ID: '+order.id);
+  window.open('https://wa.me/'+WHATS_NUMBER+'?text='+txt,'_blank');
+  alert('Order saved locally and WhatsApp opened.');
+  id('orderModal').style.display='none';
+};
+
+id('whatsBtn').onclick = ()=>{
+  const name = id('o_name').value.trim(); const phone = id('o_phone').value.trim();
+  const state = id('o_state').value.trim(); const city = id('o_city').value.trim();
+  const village = id('o_village').value.trim(); const pin = id('o_pin').value.trim();
+  const payment = id('o_pay').value;
+  if(!name||!phone||!state||!city||!pin) return alert('Please fill required fields');
+  const txt = encodeURIComponent('New order from The Darpan Wears:\\nProduct: '+(currentProduct?.name||'')+'\\nName: '+name+'\\nPhone: '+phone+'\\nAddress: '+village+', '+city+', '+state+' - '+pin+'\\nPayment: '+payment);
+  window.open('https://wa.me/'+WHATS_NUMBER+'?text='+txt,'_blank');
+};
+
+/* Admin */
+document.getElementById('adminBtn').onclick = ()=> {
+  const pw = prompt('Enter admin password'); if(!pw) return;
+  if(pw !== ADMIN_PASSWORD) return alert('Wrong password');
+  openAdmin();
+};
+id('closeAdmin').onclick = ()=> id('adminModal').style.display='none';
+
+function openAdmin(){
+  id('adminModal').style.display='flex';
+  renderAdmin();
+}
+
+function renderAdmin(){
+  const area = id('adminArea'); area.innerHTML='';
+  area.innerHTML = `
+    <div class="hint">Add / edit products. Images uploaded from your phone are saved inside the product data (base64).</div>
+    <div style="margin-top:10px"><input id="ap_name" class="input" placeholder="Product name"/></div>
+    <div><textarea id="ap_desc" class="input" placeholder="Description"></textarea></div>
+    <div style="display:flex;gap:8px"><input id="ap_sell" class="input" placeholder="Selling Price"/><input id="ap_special" class="input" placeholder="Special Price"/></div>
+    <div style="display:flex;gap:8px"><input id="ap_size" class="input" placeholder="Size"/><input id="ap_material" class="input" placeholder="Material"/></div>
+    <div style="margin-top:8px"><select id="ap_cat" class="input">${CATS.map(c=>`<option>${c}</option>`).join('')}</select></div>
+    <div class="file"><input id="ap_file" type="file" accept="image/*"/></div>
+    <div id="ap_preview" style="margin-top:8px"></div>
+    <div style="display:flex;gap:8px;margin-top:8px"><button id="ap_add" class="btn">Add Product</button><button id="ap_export" class="exportBtn">Export Products (JSON)</button><button id="ap_import" class="exportBtn">Import Products (JSON)</button></div>
+    <div style="display:flex;gap:8px;margin-top:8px"><button id="ap_setremote" class="exportBtn">Set Remote JSON URL</button><button id="ap_clearremote" class="exportBtn">Clear Remote URL</button></div>
+    <div class="hint" style="margin-top:8px">Remote URL (if set) is used to load products for everyone. Use a public raw GitHub/Gist URL containing exported products JSON.</div>
+    <hr/><div><strong>Products</strong><div id="ap_list"></div></div>
+    <hr/><div><strong>Orders (local)</strong><div id="ap_orders"></div></div>
+    <div style="margin-top:8px"><button id="ap_export_orders" class="exportBtn">Export Orders (JSON)</button></div>
+  `;
+  const file = id('ap_file');
+  file.onchange = ()=>{ const f = file.files[0]; if(!f) return; const r = new FileReader(); r.onload = e=> id('ap_preview').innerHTML = '<img src="'+e.target.result+'" style="max-width:120px;border-radius:8px"/>'; r.readAsDataURL(f); };
+
+  id('ap_add').onclick = async ()=>{
+    const name = id('ap_name').value.trim(); if(!name) return alert('Name required');
+    const desc = id('ap_desc').value||''; const sell = Number(id('ap_sell').value)||0; const special = id('ap_special').value||''; const size = id('ap_size').value||''; const material = id('ap_material').value||''; const category = id('ap_cat').value;
+    let imgBase64 = '';
+    if(file.files[0]) imgBase64 = await new Promise(r=>{ const fr = new FileReader(); fr.onload = e=> r(e.target.result); fr.readAsDataURL(file.files[0]); });
+    const idp = 'p_'+Date.now().toString(36);
+    const product = { id:idp, name, desc, sell, special, size, material, category, imgBase64, sold:0 };
+    products.unshift(product);
+    saveLocal(); renderProducts(); renderAdminProducts();
+    id('ap_preview').innerHTML=''; id('ap_name').value=''; id('ap_desc').value=''; id('ap_sell').value=''; id('ap_special').value=''; id('ap_size').value=''; id('ap_material').value='';
+    alert('Product added and saved locally. To make it visible to everyone, export Products (JSON) and publish the JSON (see remote URL).');
+  };
+
+  id('ap_export').onclick = ()=> {
+    downloadFile('darpan_products.json', JSON.stringify(products, null, 2));
+  };
+
+  id('ap_import').onclick = async ()=>{
+    const inp = document.createElement('input'); inp.type='file'; inp.accept='application/json'; inp.onchange = async ()=> {
+      try{
+        const j = await uploadJsonFromFile(inp);
+        if(!Array.isArray(j)) return alert('JSON must be an array of products');
+        products = j;
+        saveLocal();
+        renderProducts();
+        renderAdminProducts();
+        alert('Imported products to local storage.');
+      }catch(e){ alert('Import failed: '+e); }
+    };
+    inp.click();
+  };
+
+  id('ap_setremote').onclick = ()=> {
+    const url = prompt('Paste public raw URL of exported products JSON (GitHub raw or gist raw):', remoteUrl || '');
+    if(!url) return;
+    remoteUrl = url.trim();
+    localStorage.setItem(REMOTE_URL_KEY, remoteUrl);
+    alert('Remote URL saved. The site will try to load products from this URL for everyone.');
+    loadRemoteThenRender();
+  };
+
+  id('ap_clearremote').onclick = ()=> {
+    remoteUrl = '';
+    localStorage.removeItem(REMOTE_URL_KEY);
+    alert('Remote URL cleared. Site will use local products.');
+    loadLocal();
+    renderProducts(); renderAdminProducts();
+  };
+
+  id('ap_export_orders').onclick = ()=> {
+    const ordersRaw = localStorage.getItem(ORDERS_KEY) || '[]';
+    downloadFile('darpan_orders.json', ordersRaw);
+  };
+
+  renderAdminProducts();
+  renderAdminOrders();
+}
+
+function renderAdminProducts(){
+  const el = id('ap_list'); el.innerHTML='';
+  products.forEach(p=>{
+    const d = document.createElement('div'); d.style.display='flex'; d.style.justifyContent='space-between'; d.style.marginTop='8px';
+    d.innerHTML = '<div><strong>'+escapeHtml(p.name)+'</strong><div class="small">₹'+p.sell+' • sold:'+(p.sold||0)+'</div></div>';
+    const right = document.createElement('div');
+    const edit = document.createElement('button'); edit.className='btn out'; edit.innerText='Edit'; edit.onclick = ()=> adminEdit(p.id);
+    const del = document.createElement('button'); del.className='btn out'; del.style.marginLeft='8px'; del.innerText='Delete'; del.onclick = ()=> {
+      if(!confirm('Delete product?')) return;
+      products = products.filter(x=>x.id!==p.id);
+      saveLocal(); renderProducts(); renderAdminProducts();
+    };
+    right.appendChild(edit); right.appendChild(del); d.appendChild(right); el.appendChild(d);
+  });
+}
+
+function adminEdit(idp){
+  const p = products.find(x=>x.id===idp); if(!p) return;
+  const name = prompt('Name', p.name); if(!name) return;
+  const desc = prompt('Description', p.desc||''); const sell = prompt('Selling price', p.sell); const special = prompt('Special price', p.special||''); const size = prompt('Size', p.size||''); const material = prompt('Material', p.material||'');
+  p.name = name; p.desc = desc; p.sell = Number(sell)||0; p.special = special; p.size = size; p.material = material;
+  saveLocal(); renderProducts(); renderAdminProducts();
+}
+
+/* Admin orders */
+function renderAdminOrders(){
+  const raw = localStorage.getItem(ORDERS_KEY) || '[]'; let orders = [];
+  try{ orders = JSON.parse(raw);}catch(e){ orders=[]; }
+  const out = id('ap_orders'); out.innerHTML = '';
+  orders.forEach(o=>{
+    const d = document.createElement('div'); d.style.marginTop='8px';
+    d.innerHTML = '<div><strong>'+escapeHtml(o.customer.name)+'</strong> <span class="small">'+new Date(o.date).toLocaleString()+'</span></div><div class="small">Phone: '+escapeHtml(o.customer.phone)+' • '+escapeHtml(o.payment)+' • ₹'+o.product.price+'</div><div class="small">Address: '+escapeHtml(o.customer.village||'')+', '+escapeHtml(o.customer.city)+', '+escapeHtml(o.customer.state)+' - '+escapeHtml(o.customer.pin)+'</div>';
+    const send = document.createElement('button'); send.className='btn out'; send.style.marginTop='6px'; send.innerText='Send WhatsApp'; send.onclick = ()=> {
+      const msg = encodeURIComponent('New order from The Darpan Wears:\\nProduct: '+o.product.name+' (₹'+o.product.price+')\\nName: '+o.customer.name+'\\nPhone: '+o.customer.phone+'\\nAddress: '+(o.customer.village||'')+', '+o.customer.city+', '+o.customer.state+' - '+o.customer.pin+'\\nPayment: '+o.payment+'\\nOrder ID: '+o.id);
+      window.open('https://wa.me/'+WHATS_NUMBER+'?text='+msg,'_blank');
+    };
+    d.appendChild(send);
+    out.appendChild(d);
+  });
+}
+
+/* Remote JSON logic */
+async function loadRemoteThenRender(){
+  if(!remoteUrl) return;
+  try{
+    const r = await fetch(remoteUrl, {cache:'no-cache'});
+    if(!r.ok) throw new Error('Failed to fetch remote JSON: '+r.status);
+    const j = await r.json();
+    if(!Array.isArray(j)) throw new Error('Remote JSON must be array of products');
+    products = j;
+    // do not overwrite local storage automatically; save remote into local so admin edits still possible
+    saveLocal();
+    renderProducts(); if(document.getElementById('ap_list')) renderAdminProducts();
+    alert('Loaded products from remote URL and saved to local storage.');
+  }catch(e){
+    alert('Remote load failed: '+e.message);
+  }
+}
+
+/* Initialization */
+loadLocal();
+// If remote URL exists, load remote
+if(remoteUrl) loadRemoteThenRender();
+renderProducts();
+
+/* Helpful note: instruct user how to publish JSON for everyone */
+console.log('Darpan Wears initialized. To show products to everyone: export products (Admin → Export Products), upload the exported JSON file to a public raw URL (GitHub Gist or GitHub repo raw), then Admin → Set Remote JSON URL with that raw URL.');
+
+/* End script */
+</script>
+</body>
+</html>
